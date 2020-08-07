@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width">
+		<title>问卷列表</title>
+		<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+	</head>
+	<body style="padding: 10px;">
+		<top id="top"></top>
+		
+		<a href="edit-wj.html"><span id="add-major" class="btn btn-success pull-right" style="margin-right: 50px;">新增问卷</span></a>
+		<h3 class="text-center">问卷列表</h3>
+		
+		<table id="table" class="table table-hover table-striped text-center">
+			<tr style="font-weight: bold;">
+				<td>问卷ID</td>
+				<td>问卷名称</td>
+				<td>版本号</td>
+				<td>问卷操作</td>
+			</tr>
+			<tr v-for="survey in surveys">
+				<td v-text="survey.id"></td>
+				<td>
+					<a :href="'answer-wj.html?id='+survey.id" v-text="survey.name"></a>
+				</td>
+				<td v-text="survey.version"></td>
+				<td>
+					<div class="btn btn-info" @click="publish(survey.id)">发布操作</div>
+					<div class="btn btn-danger" @click="del(survey.id)">删除</div>
+				</td>
+			</tr>
+		</table>
+		
+	</body>
+	<script type="text/javascript" src="js/jquery-1.11.0.min.js" ></script>
+	<script type="text/javascript" src="bootstrap/js/bootstrap.min.js" ></script>
+	<script src="node_modules/vue/dist/vue.min.js"></script>
+	<script type="text/javascript" src="js/nav.js" ></script>
+	<script type="text/javascript" src="js/layer/layer.js" ></script>
+	<script type="text/javascript">
+		//渲染问卷列表
+		var surveys;
+		var table=new Vue({
+			el:"#table",
+			data:surveys,
+			methods:{
+				//跳转到发布操作
+				publish(id){
+					window.location.href="publish-wj.html?id="+id;
+				},
+				//删除
+				del(id){
+					layer.confirm("确定删除问卷信息吗",  {icon: 3, title:'提示'}, function(cindex){
+						delwj(id);
+						layer.close(cindex);
+					}, function(cindex){
+						layer.close(cindex);
+					});
+					function delwj(id){
+						$.ajax({
+							url:"admin/wj",
+							type:"post",
+							data:{"id":id,"_method":"delete"},
+							success:function(data){
+								if(data.success){
+									alert(data.msg);
+									window.location.href="list-wj.html";
+								}else{
+									alert(data.msg);
+								}
+							}
+						})
+					}
+				}
+				
+			},
+			beforeCreate(){
+				//获取问卷
+				$.ajax({
+					url:"admin/wj",
+					async: false,
+					success:function(data){
+						if(data.success){
+							surveys=data.data;
+						}else{
+							alert("获取数据失败，请检查登录状态")
+						}
+					}
+				})
+			}
+		})
+	
+	</script>
+</html>

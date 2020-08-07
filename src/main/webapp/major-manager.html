@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width">
+		<title>专业管理</title>
+		<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+	</head>
+	<body style="padding: 10px;">
+		<top id="top"></top>
+		<span id="add-major" class="btn btn-success pull-right" style="margin-right: 50px;">新增专业</span>
+		<h3 class="text-center">专业管理</h3>
+		<!--专业列表-->
+		<table id="table" class="table table-hover table-striped text-center">
+			<tr style="font-weight: bold;">
+				<td>专业ID</td>
+				<td>专业名称</td>
+				<td>专业操作</td>
+			</tr>
+			<tr v-for="major in majors">
+				<td v-text="major.id"></td>
+				<td v-text="major.name"></td>
+				<td>
+					<div class="btn btn-warning" @click="up(major.id,major.name)">编辑</div>
+					<div class="btn btn-danger" @click="del(major.id)">删除</div>
+				</td>
+			</tr>
+			
+		</table>
+	</body>
+	<script type="text/javascript" src="js/jquery-1.11.0.min.js" ></script>
+	<script type="text/javascript" src="bootstrap/js/bootstrap.min.js" ></script>
+	<script src="node_modules/vue/dist/vue.min.js"></script>
+	<script type="text/javascript" src="js/nav.js" ></script>
+	<script type="text/javascript" src="js/layer/layer.js" ></script>
+	<script>
+		//新增专业
+		$("#add-major").click(function(){
+			var name=prompt("输入专业名称");
+			if(name==null||name==""){
+				return;
+			}
+			$.ajax({
+				url:"admin/major",
+				type:"post",
+				data:{"name":name},
+				success:function(data){
+					if(data.success){
+						window.location.href="major-manager.html";
+					}else{
+						alert(data.msg);
+					}
+				}
+			})
+		})
+		var table=new Vue({
+			el:"#table",
+			data(){
+				return{
+					majors
+				}
+			},
+			methods:{
+				//删除专业
+				del(id){
+					layer.confirm("确定删除专业信息吗",  {icon: 3, title:'提示'}, function(cindex){
+						delmajor(id);
+						layer.close(cindex);
+					}, function(cindex){
+						layer.close(cindex);
+					});
+					function delmajor(id){
+						$.ajax({
+							url:"admin/major",
+							type:"post",
+							data:{"id":id,"_method":"delete"},
+							success:function(data){
+								if(data.success){
+									window.location.href="major-manager.html";
+								}else{
+									alert(data.msg);
+								}
+							}
+						})
+					}
+				},
+				//更新专业
+				up(id,name){
+					var name=prompt("输入新的专业名称",name);
+					if(name==null||name==""){
+						return;
+					}
+					$.ajax({
+						url:"admin/major",
+						type:"post",
+						data:{"id":id,"name":name,"_method":"put"},
+						success:function(data){
+							if(data.success){
+								window.location.href="major-manager.html";
+							}else{
+								alert(data.msg);
+							}
+						}
+					})
+				}
+				
+			},
+			beforeCreate(){
+				//获得所有专业进行渲染
+				$.ajax({
+					url:"admin/major",
+					async:false,
+					success:function(data){
+						if(data.success){
+							majors=data.data;
+						}else{
+							alert("获取数据失败，请检查登录状态");
+						}
+					}
+				});
+				
+			}
+			
+		})
+		
+		
+	</script>
+</html>
